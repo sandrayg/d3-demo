@@ -1,7 +1,4 @@
-//initialize function called when the script loads
-function initialize(){
-    cities();
-};
+
     //SVG dimension variables
     var w = 900, h = 500;
 window.onload = function(){
@@ -43,6 +40,14 @@ window.onload = function(){
         }
     ];
     //color scale generator
+    var minPop = d3.min(cityPop, function(d){//find the minimum value of the array
+          return d.population;
+      });
+
+
+    var maxPop = d3.max(cityPop, function(d){ //find the maximum value of the array
+        return d.population;
+    });
     var color = d3.scaleLinear()
         .range([
             "#FDBE85",
@@ -53,23 +58,15 @@ window.onload = function(){
             maxPop
         ]);
     var x = d3.scaleLinear() //create the linear scale or a generator function that will be used to decide where in the range each output value lies based on each input datum sent to it.
-            .range([90, 790]) //output min and max
+            .range([120, 700]) //output min and max
             .domain([0, 3]); //input min and max; bc index of datum ranges from 0 to 3
-    var minPop = d3.min(cityPop, function(d){//find the minimum value of the array
-          return d.population;
-      });
-
-
-    var maxPop = d3.max(cityPop, function(d){ //find the maximum value of the array
-        return d.population;
-    });
 
     //scale for circles center y coordinate
     var y = d3.scaleLinear()
         .range([450, 50])
         .domain([
-            minPop,
-            maxPop
+            1000000,
+            9000000
         ]) ;
     var circles = container.selectAll(".circles") //create an empty selection; placeholer for future element with class name "circles"
         .data(cityPop) // feed in an array
@@ -82,7 +79,7 @@ window.onload = function(){
         })
         .attr("r", function(d){
             //calculate the radius based on population value as circle area
-            var area = d.population * 0.01;
+            var area = d.population * 0.0005;
             return Math.sqrt(area/Math.PI);
         })
         .attr("cx", function(d, i){
@@ -92,7 +89,7 @@ window.onload = function(){
         .attr("cy", function(d){
             //applying the y scale to return the circles' center y coordinates
             return y(d.population);
-        });
+        })
         .style("fill", function(d, i){ //add a fill based on the color scale generator
             return color(d.population);
         })
@@ -118,18 +115,37 @@ window.onload = function(){
         .append("text")
         .attr("class", "labels")
         .attr("text-anchor", "left")
-        .attr("x", function(d,i){
-            //horizontal position to the right of each circle
-            return x(i) + Math.sqrt(d.population * 0.01 / Math.PI) + 5;
-        })
+        // .attr("x", function(d,i){
+        //     //horizontal position to the right of each circle
+        //     return x(i) + Math.sqrt(d.population * 0.0005 / Math.PI) + 5;
+        // })
         .attr("y", function(d){
             //vertical position centered on each circle
             return y(d.population) + 5;
         })
-        .text(function(d){
-            return d.city + ", Pop. " + d.population;
-        });
+        //first line of label
+    var nameLine = labels.append("tspan") //tspan element, child element of text
+      .attr("class", "nameLine")
+      .attr("x", function(d,i){
+          //horizontal position to the right of each circle
+          return x(i) + Math.sqrt(d.population * 0.0005 / Math.PI) + 5;
+      })
+      .text(function(d){
+          return d.city;
+      });
+
+    //second line of label
+    var popLine = labels.append("tspan")
+      .attr("class", "popLine")
+      .attr("x", function(d,i){
+          //horizontal position to the right of each circle
+          return x(i) + Math.sqrt(d.population * 0.0005 / Math.PI) + 5;
+      })
+      .text(function(d){
+          return "Pop. " + d.population;
+      })
+      .attr("dy", "15"); //vertical offset
+
 };
 
 //call the initialize function when the document has loaded
-$(document).ready(initialize);
